@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.active{
+     color:rgb(241, 167, 83);
+     scale: 1.1;
+}
