@@ -14,6 +14,15 @@ exports.signup = async (req, res) => {
                 success: false,
             });
         }
+        function isValid10DigitNumber(str) {
+            return /^\d{10}$/.test(str);
+        }
+        if(!isValid10DigitNumber(mobile)){
+            return res.status(400).json({
+                message:"Wrong phone number",
+                success:false
+            })
+        }
         email = email.toLowerCase();
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -228,6 +237,18 @@ exports.updateUser = async (req, res) => {
         if (!name || !phone) {
             return res.status(400).json({ message: "All Feild Required",success:false });
         }
+      
+      
+        function isValid10DigitNumber(str) {
+            return /^\d{10}$/.test(str);
+        }
+        if(!isValid10DigitNumber(phone)){
+            return res.status(400).json({
+                message:"Wrong phone number",
+                success:false
+            })
+        }
+        
         const user_id=req.user.id;
         const user=await User.findOne({_id:user_id});
         if(!user){
@@ -261,6 +282,14 @@ exports.updateUser = async (req, res) => {
 
 exports.logout = async (req, res) => {
     try {
+        const user_id=req.user.id;
+        const user=User.findOne({_id:user_id});
+        if(!user){
+            return res.status(400).json({
+                success:false,
+                message:"No user found"
+            })
+        }
         res.clearCookie('token', {
             httpOnly: true,
             sameSite: 'strict',

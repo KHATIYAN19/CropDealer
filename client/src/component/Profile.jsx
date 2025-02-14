@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { FiTrash, FiEdit,FiX } from "react-icons/fi"; 
 import {toast} from "react-toastify";
-
+import MyRequests from "./Myrequests";
 const Profile = () => {
   const [requests,setRequests]=useState([]);
   const { token } = useSelector((state) => state.auth);
@@ -172,6 +172,8 @@ const Profile = () => {
                 </div>
               </div>
             ))}
+             < MyRequests></MyRequests>
+
           </div>
         )}
       </div>

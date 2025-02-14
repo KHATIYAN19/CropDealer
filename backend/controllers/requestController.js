@@ -187,35 +187,61 @@ exports.deleteRequest=async(req,res)=>{
 
 
 exports.getMyRequest=async(req,res)=>{
-    try{
-       const user_id=req.user.id;
-       const user=await User.findOne({_id:user_id});
-       if(!user){
-           return res.status(400).json({
-               message:"No user found",
-               success:false,
-             })
-       }  
-       const requests=Request.find({sender:user_id});
-       if(requests.length==0){
-        return res.status(404).json({
-             message:"No Request Available",
-             success:true,
-             requests
-        })
-       }
-       return res.status(200).json({
-           message:"All Request Fetched",
-           success:true,
-           requests:requests
-         })
-    }catch(e){
-         return res.status(400).json({
-           message:"Something went wrong",
-           success:false,
-           error:e.message
-         })
+  try {
+    const user_id = req.user.id;
+
+    // Find the user
+    const user = await User.findById(user_id);
+    if (!user) {
+        return res.status(400).json({
+            message: "No user found",
+            success: false,
+        });
     }
+
+    // Fetch requests made by the user
+    const requests = await Request.find({ sender: user_id });
+
+    if (requests.length === 0) {
+        return res.status(404).json({
+            message: "No Request Available",
+            success: true,
+            requests: [],
+        });
+    }
+
+    // Fetch products associated with these requests
+    const requestIds = requests.map(req => req._id);
+
+    // Query Products based on the request field
+    const products = await Product.find({ request: { $in: requestIds } }).lean();
+    console.log("Products Found:", products); // Debugging
+
+    // Attach the product details to each request
+    const requestsWithProducts = requests.map(req => {
+        const product = products.find(prod => 
+            Array.isArray(prod.request) && prod.request.some(id => id.toString() === req._id.toString())
+        ) || null;
+        
+        console.log("Request ID:", req._id, "Product Found:", product); // Debugging
+
+        return { ...req.toObject(), product };
+    });
+
+    return res.status(200).json({
+        message: "All Requests Fetched with Products",
+        success: true,
+        requests: requestsWithProducts,
+    });
+
+} catch (e) {
+    return res.status(400).json({
+        message: "Something went wrong",
+        success: false,
+        error: e.message,
+    });
+}
+
 }
 
 

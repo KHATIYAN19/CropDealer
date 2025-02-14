@@ -1,193 +1,135 @@
-const Request = require('../models/requestModel');
-const Product = require('../models/productModel');
-const mongoose = require('mongoose');
+const Request = require("../models/requestModel");
+const Product = require("../models/productModel");
+const mongoose = require("mongoose");
 
-// Updated calculateTotalForProduct function to include request statistics
-const calculateTotalForProduct = async (productId, dateRange = null) => {
-    let totalAmount = 0;
-    let totalQuantity = 0;
-    let totalRequests = 0;
-    let totalAccepts = 0;
-    let totalRejects = 0;
-    
-    const product = await Product.findById(productId).populate('request');
-    if (!product) {
-        console.log("enter",product)
-        return { totalAmount, totalQuantity, totalRequests, totalAccepts, totalRejects };
-    }
+// 🔹 Function to Fetch Stats for a Date Range
+const getStatsForDateRange = async (productIds, startDate = null, endDate = null) => {
+  let matchStage = { product: { $in: productIds } };
 
-    console.log("product",product)
+  if (startDate && endDate) {
+    matchStage.statusChangeDate = { $gte: startDate, $lte: endDate };
+  }
 
-    for (let request of product.request) {
-        totalRequests++;  // Increment total request count
+  const result = await Request.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: "$status",
+        totalAmount: { $sum: { $multiply: ["$price", "$quantity"] } },
+        totalQuantity: { $sum: "$quantity" },
+        totalRequests: { $sum: 1 },
+      },
+    },
+  ]);
 
-        if (request.status === 'accept') {
-            totalAccepts++;  // Increment accepted request count
-            if (dateRange) {
-                const requestDate = new Date(request.statusChangeDate);
-                if (requestDate < dateRange.start || requestDate > dateRange.end) {
-                    continue;
-                }
-            }
-            totalAmount += request.price * request.quantity;
-            totalQuantity += request.quantity;
-        } else if (request.status === 'reject') {
-            totalRejects++;  // Increment rejected request count
-        }
-    }
+  let stats = { totalAmount: 0, totalQuantity: 0, totalRequests: 0 };
+  result.forEach((entry) => {
+    stats.totalAmount += entry.totalAmount || 0;
+    stats.totalQuantity += entry.totalQuantity || 0;
+    stats.totalRequests += entry.totalRequests || 0;
+  });
 
-    return { totalAmount, totalQuantity, totalRequests, totalAccepts, totalRejects };
+  return stats;
 };
 
-// Main API endpoint to get data for all periods
+// 🔹 Main API to Get Stats
 exports.getAllData = async (req, res) => {
-    const userId = req.user.id;
-    console.log(userId)
-    try {
-        const products = await Product.find({ owner: userId });
-        console.log(products);
-        let lifetimeTotalAmount = 0;
-        let lifetimeTotalQuantity = 0;
-        let lifetimeTotalRequests = 0;
-        let lifetimeTotalAccepts = 0;
-        let lifetimeTotalRejects = 0;
+  const userId = req.user.id;
 
-        let last7DaysTotalAmount = 0;
-        let last7DaysTotalQuantity = 0;
-        let last7DaysTotalRequests = 0;
-        let last7DaysTotalAccepts = 0;
-        let last7DaysTotalRejects = 0;
+  try {
+    // Fetch product IDs owned by user
+    const products = await Product.find({ owner: userId }).select("_id");
+    if (!products.length) return res.json({ lifetime: {}, last7Days: {}, last30Days: {} });
 
-        let last30DaysTotalAmount = 0;
-        let last30DaysTotalQuantity = 0;
-        let last30DaysTotalRequests = 0;
-        let last30DaysTotalAccepts = 0;
-        let last30DaysTotalRejects = 0;
+    const productIds = products.map((p) => p._id);
 
-        // Date range for last 7 days (Including today)
-        const last7DaysDateRange = {
-            start: new Date(),
-            end: new Date()
-        };
-        last7DaysDateRange.start.setDate(last7DaysDateRange.start.getDate() - 6);  // Start from 6 days ago to include today
+    // Date Ranges
+    const now = new Date();
+    const last7Days = new Date();
+    last7Days.setDate(now.getDate() - 6);
 
-        // Date range for last 30 days (Including today)
-        const last30DaysDateRange = {
-            start: new Date(),
-            end: new Date()
-        };
-        last30DaysDateRange.start.setDate(last30DaysDateRange.start.getDate() - 29);  // Start from 29 days ago to include today
+    const last30Days = new Date();
+    last30Days.setDate(now.getDate() - 29);
 
-        for (let product of products) {
-            const { totalAmount: productLifetimeAmount, totalQuantity: productLifetimeQuantity, 
-                    totalRequests: productLifetimeRequests, totalAccepts: productLifetimeAccepts, totalRejects: productLifetimeRejects } = 
-                    await calculateTotalForProduct(product._id);
-            
-            lifetimeTotalAmount += productLifetimeAmount;
-            lifetimeTotalQuantity += productLifetimeQuantity;
-            lifetimeTotalRequests += productLifetimeRequests;
-            lifetimeTotalAccepts += productLifetimeAccepts;
-            lifetimeTotalRejects += productLifetimeRejects;
+    // Fetch Stats
+    const lifetimeStats = await getStatsForDateRange(productIds);
+    const last7DaysStats = await getStatsForDateRange(productIds, last7Days, now);
+    const last30DaysStats = await getStatsForDateRange(productIds, last30Days, now);
 
-            const { totalAmount: product7DaysAmount, totalQuantity: product7DaysQuantity, 
-                    totalRequests: product7DaysRequests, totalAccepts: product7DaysAccepts, totalRejects: product7DaysRejects } = 
-                    await calculateTotalForProduct(product._id, last7DaysDateRange);
-            
-            last7DaysTotalAmount += product7DaysAmount;
-            last7DaysTotalQuantity += product7DaysQuantity;
-            last7DaysTotalRequests += product7DaysRequests;
-            last7DaysTotalAccepts += product7DaysAccepts;
-            last7DaysTotalRejects += product7DaysRejects;
-
-            const { totalAmount: product30DaysAmount, totalQuantity: product30DaysQuantity, 
-                    totalRequests: product30DaysRequests, totalAccepts: product30DaysAccepts, totalRejects: product30DaysRejects } = 
-                    await calculateTotalForProduct(product._id, last30DaysDateRange);
-            
-            last30DaysTotalAmount += product30DaysAmount;
-            last30DaysTotalQuantity += product30DaysQuantity;
-            last30DaysTotalRequests += product30DaysRequests;
-            last30DaysTotalAccepts += product30DaysAccepts;
-            last30DaysTotalRejects += product30DaysRejects;
-        }
-
-        res.json({
-            lifetime: {
-                totalAmount: lifetimeTotalAmount,
-                totalQuantity: lifetimeTotalQuantity,
-                totalRequests: lifetimeTotalRequests,
-                totalAccepts: lifetimeTotalAccepts,
-                totalRejects: lifetimeTotalRejects
-            },
-            last7Days: {
-                totalAmount: last7DaysTotalAmount,
-                totalQuantity: last7DaysTotalQuantity,
-                totalRequests: last7DaysTotalRequests,
-                totalAccepts: last7DaysTotalAccepts,
-                totalRejects: last7DaysTotalRejects
-            },
-            last30Days: {
-                totalAmount: last30DaysTotalAmount,
-                totalQuantity: last30DaysTotalQuantity,
-                totalRequests: last30DaysTotalRequests,
-                totalAccepts: last30DaysTotalAccepts,
-                totalRejects: last30DaysTotalRejects
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    res.json({
+      lifetime: lifetimeStats,
+      last7Days: last7DaysStats,
+      last30Days: last30DaysStats,
+    });
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
-// API endpoint for day-by-day data for the last 30 days
-exports.getDayByDayDataForLast30Days = async (req, res) => {
-    const userId = req.user.id;
+
+const getDailyStats = async (productIds) => {
     try {
-        const products = await Product.find({ owner: userId });
-        const dailyData = [];
-
-        const last30DaysDateRange = {
-            start: new Date(),
-            end: new Date()
-        };
-        last30DaysDateRange.start.setDate(last30DaysDateRange.start.getDate() - 29);  // Start 29 days ago to include today
-
-        for (let i = 0; i < 30; i++) {
-            const dayStart = new Date(last30DaysDateRange.start);
-            dayStart.setDate(dayStart.getDate() + i);
-            const dayEnd = new Date(dayStart);
-            dayEnd.setHours(23, 59, 59, 999);
-
-            let dailyAmount = 0;
-            let dailyQuantity = 0;
-            let dailyRequests = 0;
-            let dailyAccepts = 0;
-            let dailyRejects = 0;
-
-            const dateRange = { start: dayStart, end: dayEnd };
-
-            for (let product of products) {
-                const { totalAmount, totalQuantity, totalRequests, totalAccepts, totalRejects } = await calculateTotalForProduct(product._id, dateRange);
-                dailyAmount += totalAmount;
-                dailyQuantity += totalQuantity;
-                dailyRequests += totalRequests;
-                dailyAccepts += totalAccepts;
-                dailyRejects += totalRejects;
-            }
-
-            dailyData.push({
-                date: dayStart.toISOString().split('T')[0],
-                totalAmount: dailyAmount,
-                totalQuantity: dailyQuantity,
-                totalRequests: dailyRequests,
-                totalAccepts: dailyAccepts,
-                totalRejects: dailyRejects
-            });
-        }
-
-        res.json({
-            dailyData
-        });
+      // Define the last 30 days' date
+      const last30Days = new Date();
+      last30Days.setDate(last30Days.getDate() - 30);
+  
+      // Perform the aggregation query
+      const dailyStats = await Request.aggregate([
+        {
+          $match: {
+            product: { $in: productIds.map(id => new mongoose.Types.ObjectId(id)) },  // Ensure ObjectId format
+            statusChangeDate: { $gte: last30Days }  // Filter requests in the last 30 days
+          }
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$statusChangeDate" } }, // Group by date
+            totalAmount: { $sum: { $multiply: ["$price", "$quantity"] } }, // Calculate total amount
+            totalQuantity: { $sum: "$quantity" }, // Total quantity
+            totalRequests: { $sum: 1 }, // Total number of requests
+          }
+        },
+        { $sort: { _id: 1 } } // Sort by date ascending
+      ]);
+  
+      return dailyStats; // Return the aggregated data
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      console.error("Error fetching daily stats:", error);
+      return [];
     }
+  };
+
+// 🔹 API for Daily Stats Over Last 30 Days
+exports.getDayByDayDataForLast30Days = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const products = await Product.find({ owner: userId }).select("_id");
+    if (!products.length) return res.json({ dailyData: [] });
+      console.log("[r",products);
+      
+    const productIds = products.map((p) => p._id);
+    // const last30Days = new Date();
+    // last30Days.setDate(last30Days.getDate() - 29);
+    //     console.log(productIds,last30Days)
+    // const dailyStats = await Request.aggregate([
+    //   { $match: { product: { $in: productIds }, statusChangeDate: { $gte: last30Days } } },
+    //   {
+    //     $group: {
+    //       _id: { $dateToString: { format: "%Y-%m-%d", date: "$statusChangeDate" } },
+    //       totalAmount: { $sum: { $multiply: ["$price", "$quantity"] } },
+    //       totalQuantity: { $sum: "$quantity" },
+    //       totalRequests: { $sum: 1 },
+    //     },
+    //   },
+    //   { $sort: { _id: 1 } },
+    // ]);
+
+    const dailyStats=getDailyStats(productIds)
+
+    res.json({ dailyData: dailyStats });
+  } catch (error) {
+    console.error("Error fetching daily data:", error);
+    res.status(500).json({ error: error.message });
+  }
 };

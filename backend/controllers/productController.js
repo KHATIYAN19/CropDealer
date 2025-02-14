@@ -15,6 +15,16 @@ exports.create=async(req,res)=>{
         if (!req.file) {
           return res.status(400).send({ message: 'Item image is required' });
         }
+        function isValidIndianPincode(pincode) {
+          const regex = /^[1-9][0-9]{5}$/;
+          return regex.test(pincode);
+        }
+        if(!isValidIndianPincode(pincode)){
+          return res.status(400).json({
+            success:false,
+            message:"Invalid Pincode"
+          })
+        }
         const user=await User.findOne({_id:user_id});
         if(!user){
             return res.status(400).json({
@@ -61,6 +71,16 @@ exports.update=async(req,res)=>{
                success:false,
              })
        }
+       function isValidIndianPincode(pincode) {
+        const regex = /^[1-9][0-9]{5}$/;
+        return regex.test(pincode);
+      }
+      if(!isValidIndianPincode(pincode)){
+        return res.status(400).json({
+          success:false,
+          message:"Invalid Pincode"
+        })
+      }
        const user=await User.findOne({_id:user_id});
        if(!user){
            return res.status(400).json({
@@ -68,14 +88,14 @@ exports.update=async(req,res)=>{
                success:false,
              })
        }
-       const product=await Product.findOne({_id:product_id});
+       const product=await Product.findOne({_id:product_id}).populate('owner');
        if(!product){
         return res.status(400).json({
             message:"No Product found",
             success:false,
           })
       }
-      if(product.owner.toString()!==user_id){
+      if(product.owner._id.toString()!==user_id){
             return res.status(400).json({
                 message:"You are not authorized for this",
                 success:false,
@@ -143,7 +163,7 @@ exports.deleteProduct=async(req,res)=>{
 
 exports.getAllProduct=async(req,res)=>{
     try{
-       const products=await Product.find({});
+      const products = await Product.find({}).sort({ createdAt: -1 }).populate('owner');
        if(products.length==0){
         return res.status(200).json({
             message:"No Product Available",

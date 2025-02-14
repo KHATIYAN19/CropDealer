@@ -93,7 +93,16 @@ function ProductItem({ product,setProduct }) {
 
     return (
         <div className="border-gray-200 border-[0.5px] w-[340px] rounded-2xl px-5 py-4">
-            <div>
+            <div className="flex items-center gap-3 pb-1 border-b-[1px] border-gray-300">
+                <div className="w-14 h-14 rounded-full">
+                        <img src={product.owner.image} className="w-14 h-14 rounded-full" alt="" />
+                </div>
+                <div>
+                       <div className="font-bold text-lg">{product.owner.name}</div>
+                       <div className="text-sm text-gray-500">{product.owner.email} | <span>{product.owner.phone}</span> </div> 
+                </div>
+            </div>
+            <div className="pt-3">
                 <img className="w-[300px] h-[300px] rounded-xl" src={product.image} alt="" />
             </div>
             <div>
@@ -109,7 +118,7 @@ function ProductItem({ product,setProduct }) {
                     <div>
                       
                         {
-                            user?._id !== product.owner ? (
+                            user?._id !== product.owner._id ? (
                                 <div className="flex justify-between pt-2">
                                     {product.quantity == 0 ? (<button disabled className="text-white bg-orange-300 rounded-md px-6 py-2">
                                         Out Of Stock
@@ -188,7 +197,7 @@ function ProductItem({ product,setProduct }) {
                                 <p className="text-gray-500">Quantity: {product.quantity} Quintal</p>
                                 <p className="text-gray-500">Price: ₹{product.price} / Quintal</p>
                                 {
-                                    user._id == product.owner ? (<button className="mt-4 bg-orange-600 text-white px-6 py-2 rounded-md w-full" onClick={() => setEditMode(true)}>
+                                    user?._id == product.owner?._id ? (<button className="mt-4 bg-orange-600 text-white px-6 py-2 rounded-md w-full" onClick={() => setEditMode(true)}>
                                         Edit
                                     </button>) : (<></>)
                                 }
