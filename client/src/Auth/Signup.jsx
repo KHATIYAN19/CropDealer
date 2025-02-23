@@ -116,7 +116,7 @@ const Signup = () => {
       <div className="w-full max-w-md bg-white p-8 py-2 rounded-lg shadow-md text-black relative">
         {!isOtpStep ? (
           <>
-            <h2 className="text-2xl font-bold text-orange-600 text-center mb-6 ">SIGN UP</h2>
+            <h2 className="text-2xl font-bold text-black text-center mb-6 ">Sign Up</h2>
             <form onSubmit={handleSignupSubmit}>
               {/* Name Field */}
               <div className="mb-4">
@@ -202,12 +202,12 @@ const Signup = () => {
               <div className="mb-4">
                 <button
                   type="submit"
-                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="w-full bg-black text-white py-2 px-4 rounded-md "
                 >
                   Sign Up
                 </button>
                 <p className="text-center pt-4 text-sm text-gray-600">
-                      Already have an account? <NavLink to="/login" className="text-orange-600 hover:underline"> Login</NavLink>
+                      Already have an account? <NavLink to="/login" className="text-black text-md font-semibold hover:underline"> Login</NavLink>
                  </p>
               </div>
             </form>
@@ -223,9 +223,9 @@ const Signup = () => {
               >
                 <FaArrowLeft className="text-lg" />
               </button>
-              <h2 className="text-2xl font-bold text-orange-600 text-center flex-grow">ENTER OTP</h2>
+              <h2 className="text-2xl font-bold text-black text-center flex-grow">Enter Otp</h2>
             </div>
-            <h2>Email: <span className="text-red-500">{formData.email}</span></h2>
+            <h2>Email: <span className="text-black">{formData.email}</span></h2>
             <form onSubmit={handleOtpSubmit}>
               {/* OTP Field */}
               <div className="mb-4">
@@ -249,7 +249,7 @@ const Signup = () => {
               <div className="mb-4">
                 <button
                   type="submit"
-                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="w-full bg-black text-white py-2 px-4 rounded-md  "
                 >
                   Submit OTP
                 </button>

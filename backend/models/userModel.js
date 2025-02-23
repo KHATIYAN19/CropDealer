@@ -23,11 +23,6 @@ const userSchema=new mongoose.Schema({
     isVerified:{
         type:Boolean,
         default:false
-    },
-    check:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User'
-      }
-    ]
-},{timeStams:true});
+    }, 
+},{timestamps:true});
 module.exports=mongoose.model("User",userSchema);                                              

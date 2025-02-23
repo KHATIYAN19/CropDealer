@@ -332,5 +332,30 @@ exports.getMyData = async (req, res) => {
     }
 }
 
-
-
+exports.contact = async (req, res) => {
+     try{ 
+        const{email,phone,name,message}=req.body;
+        if(!email||!phone||!name||!message){
+             return res.status(400).json({
+                message:"All feild Required",
+                success:false,
+             })
+        }
+        const content = `Dear Admin,\n\n User ${name} have some query.Please solver user query.\n\n  ${message}. \n\n
+        Reagrds,\n\n
+        ${name}\n\n
+        ${phone}\n\n
+        ${email}
+        `;
+        await mailSender(`lavikhatiyan2@gmail.com`, `${name}-Contact You `,"" , content);
+        return res.status(200).json({
+            message:"Query Recieved Our team reply you.",
+            success:true
+        })
+     }catch(e){
+         return res.status(400).json({
+            success:false,
+            message:e.message
+         })
+     }
+}

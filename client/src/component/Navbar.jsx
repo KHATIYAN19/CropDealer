@@ -3,17 +3,14 @@ import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { toast } from "react-toastify";
-import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai"; // Icons
+import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai"; 
 import Avatar from "./Avatar";
 
 export default function App() {
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Function to close menu when clicking anywhere outside
   const closeMenu = () => setMenuOpen(false);
-
   return (
     <div className="bg-white px-6 flex items-center justify-between border-b border-gray-200 mb-6 relative">
       {/* Logo */}
@@ -43,10 +40,10 @@ export default function App() {
       <div className="flex gap-5">
         {!isAuthenticated ? (
           <>
-            <NavLink className="bg-orange-500 h-10 text-white px-5 py-2 rounded-xl flex items-center" to="/signup">
+            <NavLink className="bg-black h-10 text-white px-5 py-2 rounded-xl flex items-center" to="/signup">
               SIGNUP
             </NavLink>
-            <NavLink className="bg-orange-500 h-10 text-white px-5 py-2 rounded-xl flex items-center" to="/login">
+            <NavLink className="bg-black h-10 text-white px-5 py-2 rounded-xl flex items-center" to="/login">
               LOGIN
             </NavLink>
           </>

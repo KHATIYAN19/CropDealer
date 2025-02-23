@@ -37,9 +37,9 @@ const productSchema=new mongoose.Schema({
         ref:'User' ,
         required:true
     },
-    request:[{
+    comments:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'Request' 
+        ref:'Comment' 
     }]
-},{timeStams:true});
+},{timestamps:true});
 module.exports=mongoose.model("Product",productSchema);                                              

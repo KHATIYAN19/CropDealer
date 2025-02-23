@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import {toast} from "react-toastify"
 import { logout } from "../redux/authSlice";
 import axios from "axios";
+import { CiGift } from "react-icons/ci";
 export default function Avatar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -62,7 +63,7 @@ export default function Avatar() {
   return (
     <div className="relative inline-block">
       <img
-        src={user.image}
+        src={user?.image}
         alt="Profile"
         className="w-12 h-12 rounded-full cursor-pointer border-2 border-gray-300 hover:ring-2 hover:ring-blue-500"
         onClick={() => setIsOpen(!isOpen)}
@@ -86,6 +87,10 @@ export default function Avatar() {
           >
             <User className="w-5 h-5 mr-2" />
             Profile
+          </button>
+          <button className="flex items-center w-full px-3 py-2 hover:bg-gray-100 rounded " onClick={() => navigate("/myorders")}>
+            <CiGift  className="w-5 h-5 mr-2" />
+            My Orders
           </button>
           <button className="flex items-center w-full px-3 py-2 hover:bg-gray-100 rounded text-red-500" onClick={logoutHandler}>
             <LogOut className="w-5 h-5 mr-2" />

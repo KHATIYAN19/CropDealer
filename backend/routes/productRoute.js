@@ -1,9 +1,7 @@
 const express=require("express");
 const route=express.Router();
-
 const multer = require('multer');
 const upload = multer({ storage:multer.diskStorage({}),limits:{fileSize:50000000 } }); 
-
 const {auth}=require("../middleware/Auth")
 const {create,update,deleteProduct,getAllProduct,getProductById,getownProduct,getProductByPin,getProductByState}=require("../controllers/productController");
 route.post("/create",auth,upload.single('image'),create);

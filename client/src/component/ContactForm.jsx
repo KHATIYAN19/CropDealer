@@ -48,11 +48,15 @@ const ContactForm = () => {
     setServerMessage(null);
 
     try {
-      await axios.post("http://contact", formData);
-      setServerMessage({ type: "success", text: "Message sent successfully!" });
-      setFormData({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "", message: "" });
-    } catch (err) {
-      setServerMessage({ type: "error", text: "Failed to send message. Please try again." });
+      const res=await axios.post("http://localhost:8880/contact", formData);
+      console.log(res)
+      if(res.data.success){
+        setServerMessage({ type: "success", text: res.data.message });
+        setFormData({ name: user?.name || "", email: user?.email || "", phone: user?.phone || "", message: "" });
+      }
+    } catch (err) {  
+      console.log(err);
+      setServerMessage({ type: "error", text:err?.response?.data?.message });
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,6 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { login } from "../redux/authSlice";
 
-// Validation Schema
 const loginSchema = z.object({
   email: z.string().nonempty("Email is required").email("Invalid email address"),
   password: z.string().nonempty("Password is required").min(6, "Password must be at least 6 characters"),
@@ -56,46 +55,36 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center text-black items-center h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-orange-600 text-center mb-6">LOGIN</h2>
+    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-xl font-bold text-center mb-2">Sign In</h2>
+        <p className="text-gray-600 text-center mb-6">Access your account</p>
         <form onSubmit={handleSubmit}>
-          {/* Email Input */}
           <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email or Phone</label>
             <input
               id="email"
               name="email"
               type="text"
               value={formData.email}
               onChange={handleInputChange}
-              className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+              className="mt-1 block w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 border-gray-300"
             />
             {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </div>
-
-          {/* Password Input */}
           <div className="mb-4 relative">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <div className="relative">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <div className="relative flex items-center">
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`mt-1 block w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+                className="mt-1 block w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 border-gray-300 pr-10"
               />
               <div
-                className="absolute top-1/2 right-3 transform -translate-y-1/2 flex items-center cursor-pointer"
+                className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <FaEyeSlash className="text-gray-500" /> : <FaEye className="text-gray-500" />}
@@ -103,21 +92,12 @@ const Login = () => {
             </div>
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
           </div>
-
-          {/* Submit Button */}
-          <div className="mb-4">
-            <button
-              type="submit"
-              className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Login
-            </button>
-          </div>
+          <button type="submit" className="w-full bg-black text-white py-2 px-4 rounded-md hover:opacity-90">
+            Sign in
+          </button>
         </form>
-
-        {/* Signup Link */}
-        <p className="text-center text-sm text-gray-600">
-          Don't have an account? <NavLink to="/signup" className="text-orange-600 hover:underline">Signup</NavLink>
+        <p className="text-center text-sm text-gray-600 mt-4">
+          Not a member? <NavLink to="/signup" className="text-black font-semibold">Sign up now</NavLink>
         </p>
       </div>
     </div>
